@@ -1,6 +1,6 @@
 {
-  "name": "proton",
-  "version": "1.0.0",
+  "name": "proton-koa",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,6 +9,7 @@
   "author": "Nucleos",
   "license": "ISC",
   "dependencies": {
+    "koa": "^1.1.2",
     "proton-hook-controllers": "^1.0.0",
     "proton-hook-models": "^1.0.2",
     "proton-hook-services": "^1.0.0",
