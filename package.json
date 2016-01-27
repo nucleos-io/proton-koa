@@ -1,6 +1,6 @@
 {
   "name": "proton-koa",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,10 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "koa": "^1.1.2",
-    "proton-hook-controllers": "^1.0.0",
-    "proton-hook-models": "^1.0.2",
-    "proton-hook-services": "^1.0.0",
-    "proton-hook-routers": "^1.0.0",
-    "proton-hook-configurations": "^1.0.0"
+    "proton-quark-controllers": "^1.0.0",
+    "proton-quark-models": "^1.0.2",
+    "proton-quark-services": "^1.0.0",
+    "proton-quark-routers": "^1.0.0",
+    "proton-quark-configurations": "^1.0.0"
   }
 }

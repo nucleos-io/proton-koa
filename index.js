@@ -11,7 +11,7 @@ module.exports = class Proton extends Koa {
   }
 
   start() {
-    this._initHooks()
+    this._initQuarks()
     return this.listen(this.app.config.web.port || 8443)
   }
 
@@ -23,25 +23,25 @@ module.exports = class Proton extends Koa {
     return this.app.config.log
   }
 
-  _initHooks() {
-    this._loadCoreHooks()
-    this._loadConfigHooks()
+  _initQuarks() {
+    this._loadCoreQuarks()
+    this._loadCustomQuarks()
   }
 
-  _loadCoreHooks() {
-    this._loadHooks(require('./hooks'))
+  _loadCoreQuarks() {
+    this._loadQuarks(require('./quarks'))
   }
 
-  _loadConfigHooks() {
-    this._loadHooks(this.app.config.hooks)
+  _loadCustomQuarks() {
+    this._loadQuarks(this.app.config.quarks)
   }
 
-  _loadHooks(hooks) {
-    hooks.map(Hook => {
-      let hook = new Hook(this)
-      hook.validate()
-      hook.configure()
-      hook.initialize()
+  _loadQuarks(quarks) {
+    quarks.map(Quark => {
+      let quark = new Quark(this)
+      quark.validate()
+      quark.configure()
+      quark.initialize()
     })
   }
 
