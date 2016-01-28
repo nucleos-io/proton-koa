@@ -12,6 +12,7 @@ module.exports = class Proton extends Koa {
 
   start() {
     this._initQuarks()
+    this.expose()
     return this.listen(this.app.config.web.port || 8443)
   }
 
@@ -43,6 +44,10 @@ module.exports = class Proton extends Koa {
       quark.configure()
       quark.initialize()
     })
+  }
+
+  expose() {
+    global.proton = this
   }
 
 }
