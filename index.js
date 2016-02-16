@@ -1,7 +1,9 @@
 'use strict'
 
-let Koa = require('koa')
-let _ = require('lodash')
+const Koa = require('koa')
+const _ = require('lodash')
+const bodyParser = require('koa-bodyparser');
+
 
 module.exports = class Proton extends Koa {
 
@@ -11,6 +13,7 @@ module.exports = class Proton extends Koa {
   }
 
   start() {
+    this.use(bodyParser())
     this._initQuarks()
     this.expose()
     return this.listen(this.app.config.web.port || 8443)
@@ -39,7 +42,7 @@ module.exports = class Proton extends Koa {
 
   _loadQuarks(quarks) {
     quarks.map(Quark => {
-      let quark = new Quark(this)
+      const quark = new Quark(this)
       quark.validate()
       quark.configure()
       quark.initialize()
