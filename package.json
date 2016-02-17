@@ -1,6 +1,6 @@
 {
   "name": "proton-koa",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,7 @@
     "proton-quark-services": "^1.0.0",
     "proton-quark-routers": "^1.0.0",
     "proton-quark-configurations": "^1.0.0",
+    "proton-quark-policies": "^1.0.0",
     "koa-bodyparser": "^2.0.0"
   }
 }
