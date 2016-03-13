@@ -15,7 +15,12 @@ module.exports = class Proton extends Koa {
   start() {
     this.expose()
     this._initQuarks()
+    this.middleware.unshift(function *(next) {
+      this.body = this.request.body
+      yield next
+    })
     this.middleware.unshift(bodyParser())
+
     return this.listen(this.app.config.web.port || 8443)
   }
 
