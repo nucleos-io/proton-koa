@@ -42,7 +42,7 @@ module.exports = class Proton extends Koa {
   }
 
   _loadBootstrapQuark() {
-    this._loadQuarks([require('proton-quark-bootstrap')]) {
+    this._loadQuarks([require('proton-quark-bootstrap')])
   }
 
   _loadQuarks(quarks) {
