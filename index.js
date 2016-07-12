@@ -42,6 +42,7 @@ module.exports = class Proton extends Koa {
 
   _loadQuarks(quarks) {
     quarks.map(Quark => {
+      console.log(Quark)
       const quark = new Quark(this)
       quark.validate()
       quark.configure()
