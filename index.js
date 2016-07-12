@@ -13,9 +13,9 @@ module.exports = class Proton extends Koa {
   }
 
   start() {
-    this.use(bodyParser())
-    this._initQuarks()
     this.expose()
+    this._initQuarks()
+    this.middleware.unshift(bodyParser())
     return this.listen(this.app.config.web.port || 8443)
   }
 
@@ -30,6 +30,7 @@ module.exports = class Proton extends Koa {
   _initQuarks() {
     this._loadCoreQuarks()
     this._loadCustomQuarks()
+    this._loadBootstrapQuark()
   }
 
   _loadCoreQuarks() {
@@ -38,6 +39,10 @@ module.exports = class Proton extends Koa {
 
   _loadCustomQuarks() {
     this._loadQuarks(this.app.config.quarks)
+  }
+
+  _loadBootstrapQuark() {
+    this._loadQuarks([require('proton-quark-bootstrap')])
   }
 
   _loadQuarks(quarks) {
