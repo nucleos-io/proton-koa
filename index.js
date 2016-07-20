@@ -1,7 +1,6 @@
 'use strict'
 
 const Koa = require('koa')
-const _ = require('lodash')
 const bodyParser = require('koa-bodyparser');
 
 
