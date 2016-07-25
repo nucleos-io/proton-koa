@@ -15,7 +15,9 @@ module.exports = class Proton extends Koa {
     this.expose()
     this._initQuarks()
     this.middleware.unshift(bodyParser())
-    return this.listen(this.app.config.web.port || 8443)
+    const port = this.app.config.web.port || 8443
+    this.log.info('Ready for listen events on port', port, ' :)')
+    return this.listen(port)
   }
 
   get enviroment() {
@@ -46,7 +48,6 @@ module.exports = class Proton extends Koa {
 
   _loadQuarks(quarks) {
     quarks.map(Quark => {
-      console.log(Quark)
       const quark = new Quark(this)
       quark.validate()
       quark.configure()
