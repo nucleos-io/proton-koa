@@ -6,18 +6,11 @@ const bodyParser = require('koa-bodyparser');
 
 module.exports = class Proton extends Koa {
 
-  constructor(app) {
+  constructor(app, quarks = []) {
     super()
+    this.events = []
+    this.quarks = (app) ? require(`${app}/config/quarks.js`) : quarks
     this.app = app
-  }
-
-  start() {
-    this.expose()
-    this._initQuarks()
-    this.middleware.unshift(bodyParser())
-    const port = this.app.config.web.port || 8443
-    this.log.info('Ready for listen events on port', port, ' :)')
-    return this.listen(port)
   }
 
   get enviroment() {
@@ -28,35 +21,67 @@ module.exports = class Proton extends Koa {
     return this.app.config.log
   }
 
-  _initQuarks() {
-    this._loadCoreQuarks()
-    this._loadCustomQuarks()
-    this._loadBootstrapQuark()
+  expose() {
+    global.proton = this
   }
 
-  _loadCoreQuarks() {
-    this._loadQuarks(require('./quarks'))
-  }
-
-  _loadCustomQuarks() {
-    this._loadQuarks(this.app.config.quarks)
-  }
-
-  _loadBootstrapQuark() {
-    this._loadQuarks([require('proton-quark-bootstrap')])
-  }
-
-  _loadQuarks(quarks) {
-    quarks.map(Quark => {
-      const quark = new Quark(this)
-      quark.validate()
-      quark.configure()
-      quark.initialize()
+  start() {
+    this.listenForQuarksLifecycleCompletion()
+    this.initializeQuarks()
+    this.once('quark:all:initialize', () => {
+      const port = this.app.config.web.port || 8443
+      this.expose()
+      this.listen(port)
+      this.log.info('Ready for listen events on port', port, ' :)')
     })
   }
 
-  expose() {
-    global.proton = this
+  initializeQuarks() {
+    this.quarks.map(Quark => {
+      const quark = new Quark(this)
+      quark.validate().then(() => {
+        quark.emit(`quark:${quark.name}:validate`)
+      })
+      this.after('quark:all:validate', () => {
+        quark.configure().then(() => {
+          quark.emit(`quark:${quark.name}:configure`)
+        })
+      })
+      this.after('quark:all:configure', () => {
+        quark.initialize().then(() => {
+          quark.emit(`quark:${quark.name}:initialize`)
+        })
+      })
+    })
+  }
+
+  listenForQuarksLifecycleCompletion() {
+    const events = this.getQuarksLifeCycleCompletionEvents()
+    this.after(events.configured, () => this.emit('quark:all:configure'))
+    this.after(events.validated, () => this.emit('quark:all:validate'))
+    this.after(events.initialised, () => this.emit('quark:all:initialize'))
+  }
+
+  getQuarksLifeCycleCompletionEvents() {
+    return this.quarks.reduce((events, q) => {
+      events.configured.push(`quark:${q.name}:configure`)
+      events.validated.push(`quark:${q.name}:validate`)
+      events.initialised.push(`quark:${q.name}:initialize`)
+      return events
+    }, { configured: [], validated: [], initialised: [] })
+  }
+
+  after(events, cb) {
+    const promises = []
+    events = !Array.isArray(events) ? [events] : events
+    events.map(event => {
+      if (this.events[event]) {
+        promises.push(Promise.resolve())
+      } else {
+        promises.push(new Promise(resolve => this.once(event, () => resolve())))
+      }
+    })
+    Promise.all(promises).then(() => cb())
   }
 
 }
