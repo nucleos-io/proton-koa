@@ -27,48 +27,68 @@ module.exports = class Proton extends Koa {
 
   start() {
     this.listenForQuarksLifecycleCompletion()
+    // Initialize the quarks
     this.initializeQuarks()
-    this.once('quark:all:initialize', () => {
-      const port = this.app.config.web.port || 8443
-      this.expose()
-      this.listen(port)
-      this.log.info('Ready for listen events on port', port, ' :)')
+    // When all the quarks are ready for his use the server must be initialized
+    this.once('quarks:ready', () => this.runServer())
+  }
+
+  /**
+   * @description This method takes all the quarks used by the app an
+   * by each of them execute the default life cycle methods
+   * @author Luis Hernandez
+   */
+  async initQuarks() {
+    this.quarks.map(async function(Quark) {
+      const quark = new Quark(this)
+      await Promise.all([
+        validateQuark(quark), configureQuark(quark), initializeQuark(quark)
+      ])
     })
   }
 
-  initializeQuarks() {
-    this.quarks.map(Quark => {
-      const quark = new Quark(this)
-      quark.validate().then(() => {
-        quark.emit(`quark:${quark.name}:validate`)
-      })
-      this.after('quark:all:validate', () => {
-        quark.configure().then(() => {
-          quark.emit(`quark:${quark.name}:configure`)
-        })
-      })
-      this.after('quark:all:configure', () => {
-        quark.initialize().then(() => {
-          quark.emit(`quark:${quark.name}:initialize`)
-        })
-      })
-    })
+  /**
+   * @description This method execute validate method of the quark and emit
+   * that this quark has been initialized
+   * @param quark
+   * @author Luis Hernandez
+   */
+  async validateQuark(quark) {
+    await quark.validate()
+    quark.emit(`quark:${quark.name}:valid`)
+  }
+
+  async configureQuark(quark) {
+    await quark.configure()
+    quark.emit(`quark:${quark.name}:config`)
+  }
+
+  async initializeQuark(quark) {
+    await quark.initialize()
+    quark.emit(`quark:${quark.name}:init`)
+  }
+
+  runServer() {
+    const port = this.app.config.web.port || 8443
+    this.expose()
+    this.listen(port)
+    this.log.info('Ready for listen events on port', port, ' :)')
   }
 
   listenForQuarksLifecycleCompletion() {
     const events = this.getQuarksLifeCycleCompletionEvents()
-    this.after(events.configured, () => this.emit('quark:all:configure'))
-    this.after(events.validated, () => this.emit('quark:all:validate'))
-    this.after(events.initialised, () => this.emit('quark:all:initialize'))
+    this.after(events.configured, () => this.emit('quarks:configured'))
+    this.after(events.validated, () => this.emit('quarks:validated'))
+    this.after(events.initialised, () => this.emit('quark:all:initialized'))
   }
 
   getQuarksLifeCycleCompletionEvents() {
     return this.quarks.reduce((events, q) => {
-      events.configured.push(`quark:${q.name}:configure`)
-      events.validated.push(`quark:${q.name}:validate`)
-      events.initialised.push(`quark:${q.name}:initialize`)
+      events.configured.push(`quark:${q.name}:config`)
+      events.validated.push(`quark:${q.name}:valid`)
+      events.initialized.push(`quark:${q.name}:init`)
       return events
-    }, { configured: [], validated: [], initialised: [] })
+    }, { configured: [], validated: [], initialized: [] })
   }
 
   after(events, cb) {
