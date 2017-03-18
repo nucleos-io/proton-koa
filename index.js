@@ -10,6 +10,7 @@ module.exports = class Proton extends Koa {
     super()
     this.events = []
     this.quarks = (app) ? require(`${app.path}/config/quarks.js`) : quarks
+    this.quarks.unshift(require('proton-quark-configurations'))
     this.app = app
   }
 
@@ -80,7 +81,7 @@ module.exports = class Proton extends Koa {
     const events = this.getQuarksLifeCycleCompletionEvents()
     this.after(events.configured, () => this.emit('quarks:configured'))
     this.after(events.validated, () => this.emit('quarks:validated'))
-    this.after(events.initialised, () => this.emit('quark:all:initialized'))
+    this.after(events.initialized, () => this.emit('quarks:ready'))
   }
 
   getQuarksLifeCycleCompletionEvents() {
