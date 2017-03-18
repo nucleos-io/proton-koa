@@ -1,6 +1,6 @@
 {
   "name": "proton-koa",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "koa": "^2.0.1",
-    "proton-quark-configurations": "^1.0.0",
+    "proton-quark-configurations": "^2.0.0",
     "koa-bodyparser": "^2.0.0",
     "proton-quark": "^2.0.1"
   }
