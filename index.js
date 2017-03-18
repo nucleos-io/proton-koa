@@ -9,7 +9,7 @@ module.exports = class Proton extends Koa {
   constructor(app, quarks = []) {
     super()
     this.events = []
-    this.quarks = (app) ? require(`${app}/config/quarks.js`) : quarks
+    this.quarks = (app) ? require(`${app.path}/config/quarks.js`) : quarks
     this.app = app
   }
 
