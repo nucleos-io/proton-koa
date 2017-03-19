@@ -32,11 +32,16 @@ module.exports = class Proton extends Koa {
   }
 
   start() {
-    this.listenForQuarksLifecycleCompletion()
-    // Initialize the quarks
-    this.initQuarks()
-    // When all the quarks are ready for his use the server must be initialized
-    this.once('quarks:ready', () => this.runServer())
+    return new Promise(resolve => {
+      this.listenForQuarksLifecycleCompletion()
+      // Initialize the quarks
+      this.initQuarks()
+      // When all the quarks are ready for his use the server must be initialized
+      this.once('quarks:ready', () => {
+        this.runServer()
+        resolve(this)
+      })
+    })
   }
 
   /**
