@@ -6,12 +6,17 @@ const bodyParser = require('koa-bodyparser');
 
 module.exports = class Proton extends Koa {
 
-  constructor(app, quarks = []) {
+  constructor(app, quarks) {
     super()
     this.events = []
-    this.quarks = (app) ? require(`${app.path}/config/quarks.js`) : quarks
-    this.quarks.unshift(require('proton-quark-configurations'))
     this.app = app
+    this.quarks = this.instantiateQuarks(quarks)
+  }
+
+  instantiateQuarks(quarks) {
+    quarks = quarks || require(`${this.app.path}/config/quarks.js`)
+    quarks.unshift(require('proton-quark-configurations'))
+    return quarks.map(Quark => new Quark(this))
   }
 
   get enviroment() {
@@ -41,8 +46,7 @@ module.exports = class Proton extends Koa {
    */
   async initQuarks() {
     const self = this
-    this.quarks.map(async function(Quark) {
-      const quark = new Quark(self)
+    this.quarks.map(async function(quark) {
       await Promise.all([
         self.validateQuark(quark), self.configureQuark(quark), self.initializeQuark(quark)
       ])
@@ -93,17 +97,23 @@ module.exports = class Proton extends Koa {
     }, { configured: [], validated: [], initialized: [] })
   }
 
-  after(events, cb) {
-    const promises = []
-    events = !Array.isArray(events) ? [events] : events
-    events.map(event => {
-      if (this.events[event]) {
-        promises.push(Promise.resolve())
-      } else {
-        promises.push(new Promise(resolve => this.once(event, () => resolve())))
-      }
-    })
-    Promise.all(promises).then(() => cb())
+  async after(events, cb) {
+    try {
+      const promises = []
+      events = !Array.isArray(events) ? [events] : events
+      events.map(event => {
+        if (this.events[event]) {
+          promises.push(Promise.resolve(event))
+        } else {
+          promises.push(new Promise(r => this.on(event, () => r(event))))
+        }
+      })
+      await Promise.all(promises)
+      cb()
+    } catch (err) {
+      console.log(err)
+    }
+
   }
 
 }
