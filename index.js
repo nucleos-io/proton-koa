@@ -45,12 +45,17 @@ module.exports = class Proton extends Koa {
    * @author Luis Hernandez
    */
   async initQuarks() {
-    const self = this
-    this.quarks.map(async function(quark) {
-      await Promise.all([
-        self.validateQuark(quark), self.configureQuark(quark), self.initializeQuark(quark)
-      ])
-    })
+    try {
+      const self = this
+      this.quarks.map(async function(quark) {
+        await Promise.all([
+          self.validateQuark(quark), self.configureQuark(quark), self.initializeQuark(quark)
+        ])
+      })
+    } catch(err) {
+      console.log(err)
+      process.exit(1)
+    }
   }
 
   /**
