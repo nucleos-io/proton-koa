@@ -38,8 +38,8 @@ module.exports = class Proton extends Koa {
       this.initQuarks()
       // When all the quarks are ready for his use the server must be initialized
       this.once('quarks:ready', () => {
-        this.runServer()
-        resolve(this)
+        const server = this.runServer()
+        resolve(server)
       })
     })
   }
@@ -87,8 +87,8 @@ module.exports = class Proton extends Koa {
   runServer() {
     const port = this.app.config.web.port || 8443
     this.expose()
-    this.listen(port)
     this.log.info('Ready for listen events on port', port, ' :)')
+    return this.listen(port)
   }
 
   listenForQuarksLifecycleCompletion() {
