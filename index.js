@@ -33,6 +33,7 @@ module.exports = class Proton extends Koa {
 
   start() {
     return new Promise(resolve => {
+      this.expose()
       this.listenForQuarksLifecycleCompletion()
       // Initialize the quarks
       this.initQuarks()
@@ -86,7 +87,6 @@ module.exports = class Proton extends Koa {
 
   runServer() {
     const port = this.app.config.web.port || 8443
-    this.expose()
     this.log.info('Ready for listen events on port', port, ' :)')
     return this.listen(port)
   }
