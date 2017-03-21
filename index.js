@@ -1,7 +1,7 @@
 'use strict'
 
 const Koa = require('koa')
-const bodyParser = require('koa-bodyparser');
+let path = require('path')
 
 
 module.exports = class Proton extends Koa {
@@ -10,12 +10,12 @@ module.exports = class Proton extends Koa {
     super()
     this.events = []
     this.app = app
+    this.app.config = require('require-all')(this.paths.config)
     this.quarks = this.instantiateQuarks(quarks)
   }
 
   instantiateQuarks(quarks) {
     quarks = quarks || require(`${this.app.path}/config/quarks.js`)
-    quarks.unshift(require('proton-quark-configurations'))
     return quarks.map(Quark => new Quark(this))
   }
 
@@ -25,6 +25,14 @@ module.exports = class Proton extends Koa {
 
   get log() {
     return this.app.config.log
+  }
+
+  get paths() {
+    return {
+      config: path.join(this.app.path, '/config'),
+      api: path.join(this.app.path, '/api'),
+      root: this.app.path
+    }
   }
 
   expose() {
@@ -50,39 +58,25 @@ module.exports = class Proton extends Koa {
    * by each of them execute the default life cycle methods
    * @author Luis Hernandez
    */
-  async initQuarks() {
+  initQuarks() {
     try {
-      const self = this
-      this.quarks.map(async function(quark) {
-        await Promise.all([
-          self.validateQuark(quark), self.configureQuark(quark), self.initializeQuark(quark)
-        ])
+      this.quarks.map(quark => {
+        quark.validate()
+          .then(() => {
+            quark.emit(`quark:${quark.name}:valid`)
+            return quark.configure()
+          })
+          .then(() => {
+            quark.emit(`quark:${quark.name}:config`)
+            return quark.initialize()
+          })
+          .then(() => quark.emit(`quark:${quark.name}:init`))
+          .catch(console.log)
       })
     } catch(err) {
       console.log(err)
       process.exit(1)
     }
-  }
-
-  /**
-   * @description This method execute validate method of the quark and emit
-   * that this quark has been initialized
-   * @param quark
-   * @author Luis Hernandez
-   */
-  async validateQuark(quark) {
-    await quark.validate()
-    quark.emit(`quark:${quark.name}:valid`)
-  }
-
-  async configureQuark(quark) {
-    await quark.configure()
-    quark.emit(`quark:${quark.name}:config`)
-  }
-
-  async initializeQuark(quark) {
-    await quark.initialize()
-    quark.emit(`quark:${quark.name}:init`)
   }
 
   runServer() {

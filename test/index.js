@@ -6,7 +6,7 @@ describe('Framework tests', () => {
   let app = ''
 
   it('instance the framework', () => {
-    app = new Proton(undefined, [require('./quarks.js')])
+    app = new Proton({ path: __dirname }, [require('./quarks.js')])
   })
 
   it('start the framework', () => {
