@@ -59,24 +59,23 @@ module.exports = class Proton extends Koa {
    * @author Luis Hernandez
    */
   initQuarks() {
-    try {
-      this.quarks.map(quark => {
-        quark.validate()
-          .then(() => {
-            quark.emit(`quark:${quark.name}:valid`)
-            return quark.configure()
-          })
-          .then(() => {
-            quark.emit(`quark:${quark.name}:config`)
-            return quark.initialize()
-          })
-          .then(() => quark.emit(`quark:${quark.name}:init`))
-          .catch(console.log)
-      })
-    } catch(err) {
-      console.log(err)
-      process.exit(1)
-    }
+    this.quarks.map(quark => {
+      quark.validate()
+        .then(() => {
+          quark.emit(`quark:${quark.name}:valid`)
+          return quark.configure()
+        })
+        .then(() => {
+          quark.emit(`quark:${quark.name}:config`)
+          return quark.initialize()
+        })
+        .then(() => quark.emit(`quark:${quark.name}:init`))
+        .catch(err => {
+          console.log(err)
+          process.exit(1)
+        }
+      )
+    })
   }
 
   runServer() {
